@@ -1,4 +1,4 @@
-GitBook Example
-=======
+# 摘要
 
-Welcome in your GitBook!
+* [LDAP服务器配置](2014/ldap/ldap.asciidoc)
+
