@@ -1,0 +1,56 @@
+= 配置(Configuration)
+
+== 什么是配置？
+
+== 需求
+
+1. 从任何地方都可以获取配置(IOC，依赖倒置)
++
+这就意味着配置全局单例，唯一不可变
+2. 可被覆盖
++
+最简单的场景：开发环境，测试环境，线上环境，90%相同，10%不同
+3. 命名空间和延时加载
++
+两个场景：
++
+. 配置项log_file: 每个进程都用log_file作为日志文件的配置项，但是同时引用两个配置文件时就会发生冲突。
+. 配置文件太多，90%用不到，全部加载会浪费内存，这时也需要命名空间配合延时加载技术来解决。
+
+== 设计
+
+=== 全局单例
+
+`Configuration.init()`
+
+=== 配置的初始化
+
+`Conf.init()`
+
+init的参数数目录的list，如：
+
+[source, python]
+----
+Conf.init(['/opt/tiger/ss_conf/ss', '/etc/ss_conf', '~/repos/ss_conf_local'])
+----
+
+覆盖原则：目录是有顺序的，后面的配置可以覆盖前面的配置。
+
+[source, python]
+----
+def load_namespace(self, namespace):
+    config_dict = {}
+
+        for dir in self.dirs:
+
+            file_name = os.path.join(dir, namespace))
+            if not os.path.exists(file_name):
+                continue
+
+            with open(file_name) as fp:
+                config_dict.update(yaml.load(fp))
+
+        return config_dict
+----
+
+=== 命名空间
