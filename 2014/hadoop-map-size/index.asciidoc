@@ -3,9 +3,11 @@
 hadooop提供了一个设置map个数的参数mapred.map.tasks，我们可以通过这个参数来控制map的个数。但是通过这种方式设置map的个数，并不是每次都有效的。原因是mapred.map.tasks只是一个hadoop的参考数值，最终map的个数，还取决于其他的因素。
 为了方便介绍，先来看几个名词：
 
+====
 . block_size : hdfs的文件块大小，默认为64M，可以通过参数dfs.block.size设置
 . total_size : 输入文件整体的大小
 . input_file_num : 输入文件的个数
+====
 
 （1）默认map个数
 如果不进行任何设置，默认的map个数是和blcok_size相关的。
