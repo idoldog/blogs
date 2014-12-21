@@ -82,20 +82,20 @@ push含附注的标签
 ----
 [access "refs/heads/*"]
     create = group Registered Users
-    push = group Registered Users
+    push = group Registered Users  <1>
     editTopicName = +force group Registered Users
     submit = group Registered Users
     label-Code-Review = -2..+2 group Registered Users
     label-Verified = -1..+1 group Registered Users
-[access "refs/heads/test"]
+[access "refs/heads/test"]  <2>
     push = +force group Registered Users
-[access "refs/heads/sandbox/*"]
+[access "refs/heads/sandbox/*"]  <3>
     push = +force group Registered Users
-[access "refs/heads/master"]
+[access "refs/heads/master"] <4>
     push = block +force group Registered Users
 ----
 
 <1> 注册用户可以`push`分支。
-<2> `sandbox`下的分支可以覆盖。
-<3> `test`分支可以覆盖。
+<2> `test`分支可以覆盖。
+<3> `sandbox`下的分支可以覆盖。
 <4> `master`分支禁止`push`操作，只能通过`submit`。
