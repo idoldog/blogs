@@ -1,0 +1,186 @@
+= 由cffi模块的思考
+
+== cffi介绍
+
+== 数据序列化
+
+.代码
+[source, python]
+----
+# coding: utf-8
+import json
+import cPickle
+import cffi
+import time
+import umsgpack
+import msgpack
+
+from io import BytesIO
+from contextlib import contextmanager
+from cffi import FFI
+
+ffi = FFI()
+
+cnt = 800*600
+
+ffi.cdef("""
+    typedef struct {
+         unsigned long long group_id;
+         unsigned char type;
+         double timestamp;
+    } item;
+""")
+
+
+@contextmanager
+def timer(label):
+
+    t = time.time()
+    yield
+    print '\t'.join([label, str(1000000 * (time.time() - t))])
+
+
+image = ffi.new("item[]", cnt)
+
+with timer('cffi init'):
+    for i in xrange(cnt):
+        image[i].group_id = long(i)
+        image[i].timestamp = time.time()
+        image[i].type = int(i % 255)
+
+results = []
+with timer('dict init'):
+    for i in xrange(cnt):
+        results.append(dict(group_id=image[i].group_id, timestamp=image[i].timestamp, type=image[i].type))
+
+
+with timer('cffi dumps'):
+    data = ffi.buffer(image)
+
+b = BytesIO(data)
+with timer('cffi load'):
+    b.readinto(ffi.buffer(image))
+
+print 'cffi size', len(data)
+
+with timer('json dumps'):
+    data = json.dumps(results)
+
+with timer('json load'):
+    _ = json.loads(data)
+
+print 'json size', len(data)
+
+with timer('cPickle dumps'):
+    data = cPickle.dumps(results)
+
+with timer('cPickle load'):
+    _ = cPickle.loads(data)
+
+print 'cPickle size', len(data)
+
+with timer('cPickle 1 dumps'):
+    data = cPickle.dumps(results, 1)
+
+with timer('cPickle 1 load'):
+    _ = cPickle.loads(data)
+
+print 'cPickle 1 size', len(data)
+
+with timer('cPickle 2 dumps'):
+    data = cPickle.dumps(results, 2)
+
+with timer('cPickle 2 load'):
+    _ = cPickle.loads(data)
+
+print 'cPickle 2 size', len(data)
+
+with timer('umsgpack'):
+    data = umsgpack.dumps(results)
+
+with timer('umsgpack load'):
+    _ = umsgpack.loads(data)
+
+print 'umsgpack size', len(data)
+
+with timer('msgpack'):
+    data = msgpack.dumps(results)
+
+with timer('msgpack load'):
+    _ = msgpack.loads(data)
+
+print 'msgpack size', len(data)
+----
+
+
+.结果
+....
+cffi init       520709.991455
+dict init       485521.07811
+cffi dumps      5.96046447754
+cffi load       2794.02732849
+cffi size 11520000
+json dumps      979398.965836
+json load       1255753.99399
+json size 31788509
+cPickle dumps   2110795.02106
+cPickle load    757224.082947
+cPickle size 26707082
+cPickle 1 dumps 1281006.09779
+cPickle 1 load  340780.01976
+cPickle 1 size 16209128
+cPickle 2 dumps 1228351.83144
+cPickle 2 load  313802.957535
+cPickle 2 size 14367343
+umsgpack dumps  6035499.09592
+umsgpack load   7285142.1833
+umsgpack size 20747563
+msgpack dumps   216999.053955
+msgpack load    344926.834106
+msgpack size 19307563
+....
+
+.数据对照表
+[caption="图表一、"]
+|====
+|类型      | 大小     | dumps         | loads         | 初始化
+|cffi      | 11520000 | 5.96046447754 | 2794.02732849 | 520709.991455
+|json      | 31788509 | 979398.965836 | 1255753.99399
+.6+a| 485521.07811
+(均为dict)
+|cPickle   | 26707082 | 2110795.02106 | 757224.082947
+|cPickle 1 | 16209128 | 1281006.09779 | 340780.01976
+|cPickle 2 | 14367343 | 1228351.83144 | 313802.957535
+|umsgpack  | 20747563 | 6035499.09592 | 7285142.1833
+|msgpack   | 19307563 | 216999.053955 | 344926.834106
+
+|====
+
+== 单机数据共享
+
+.单击数据共享示例代码
+[source, python, caption="示例代码二、"]
+----
+# coding: utf-8
+from cffi import FFI
+
+ffi = FFI()
+
+ffi.cdef("""
+typedef struct {
+    unsigned long long group_id;
+    unsigned char type;
+    double timestamp;
+} item;
+""")
+
+image = ffi.new("item[]", 2000)
+with open('shared_file', 'rb') as fp:  #  <1>
+    fp.readinto(ffi.buffer(data))
+----
+
+NOTE: 代码中的`shared_file`存放在tmpfs上。
+
+仔细想来也不太合适，文件系统有block一说，一个文件最小4K，而且大量小文件会降低性能。
+
+想来还是多学习一下C++吧
