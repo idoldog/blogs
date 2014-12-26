@@ -1,0 +1,4 @@
+handers:
+- paths: ['ss_site/djangosite', 'ss_data']
+  patterns: ["*.py", "*.js"]
+  target: 10.4.17.164:repos
