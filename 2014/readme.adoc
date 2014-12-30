@@ -1,1 +1,10 @@
-. link:watchdog-rsync/readme.asc[使用`watchdog`+`rsync`自动同步代码到服务器]
+== 2014年
+
+. link:configuration[配置(Configuration)]
+. link:watchdog-rsync[使用`watchdog`+`rsync`自动同步代码到服务器]
+. link:dnsmasq[使用DNSMASQ搭建DNS服务器]
+. link:gerrit[Gerrit权限设置]
+. link:kerberos[Kerberos认证]
+. link:ldap[LDAP配置]
+. link:openvpn-with-pritul[使用pritunl搭建OpenVPN服务]
+. link:think-in-cffi[cffi模块的思考]

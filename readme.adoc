@@ -5,9 +5,8 @@
 :toc-placement!:
 :icons:
 :source-highlighter: highlight
-ifdef::safe-mode-secure[]
+ifdef::safe-mode-safe[]
 
 toc::[]
 
-== 2014年
 include::2014/readme.adoc[]
