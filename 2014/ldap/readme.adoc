@@ -300,3 +300,52 @@ image::images/8.png[caption="图片8 "]
 image::images/9.png[caption="图片9 "]
 
 剩下的就可以在组里面看到LDAP服务器上的组了，按需在`空间权限`中分配权限。
+
+== Kerberos认证
+
+Kerberos认证的基础知识可以参考： link:../kerberos/[Kerberos认证]
+
+这里只是说一下ApacheDS附带的Kerberos服务器配置的一些说明。
+
+在用户的实体(Entity)中添加下列属性就可以使用Kerberos了，当然值只是参考
+
+.Kerberos用到的属性
+----
+objectClass: krb5KDCEntry
+objectClass: krb5Principal
+krb5KeyVersionNumber: 1
+krb5PrincipalName: root/admin@3S.CN
+krb5Key:: MBGgAwIBA6EKBAhAZDHpm3Ml8Q==
+krb5Key:: MBmgAwIBEaESBBDcJQYdYTS5xB18L02lX3/g
+krb5Key:: MBmgAwIBF6ESBBBlREnp7yjhSefWNSBL9S/0
+krb5Key:: MCGgAwIBEKEaBBjyYhw4Ac5nXV1dejGMQLwV6Sb48vGDm7Y=
+----
+
+=== Kerberos认证密码设置的坑
+
+为用户设置密码的时候（如下图），有个选项*“Select Hash Method”*，一般都会选用*SSHA*等，
+但是很奇怪的是使用这些Hash算法生成的密码都无法使用Kerberos登录，只有使用*Plaintext*方法
+设置的密码才可以正常的使用Kerberos登录。
+
+image::images/10.png[]
+
+后来又发现即便采用了*Plaintext*方法生成的密码，再次刷新实体(Entity)后*userPassword*
+显示的函数*SSHA*方法Hash的，如下图。
+
+.使用*Plaintext*生成的密码，明文为platform。
+image::images/12.png[]
+
+这个情况非常诡异，测试了一下和下图的设置有关。若勾选了*Enable server-side password hashing*，
+即使用了*Plaintext*设置密码也会
+存储为使用设置的Hashing方法进行一次Hash。
+
+.Enable server-side password hashing
+image::images/11.png[]
+
+NOTE: 还是有个问题：就是使用了*SSHA* Hash的密码LDAP认证是没问题的，Kerberos认证通不过，
+不会是明确指定Hash算法的密码进行了两次Hash吧。
+
+所以最佳实践是：
+
+. 开启*Enable server-side password hashing*。
+. 密码设置时使用*Plaintext* Hash算法。
