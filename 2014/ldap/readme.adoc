@@ -171,30 +171,29 @@ objectClass: accessControlSubentry
 objectClass: subentry
 objectClass: top
 cn: enableAllUsersRead
-prescriptiveACI: {
-  identificationTag "enableAllUsersRead",
-  precedence 0,
-  authenticationLevel none,
-  itemOrUserFirst userFirst:
-  {
-    userClasses { allUsers },
-    userPermissions
+prescriptiveACI:{
+    identificationTag "enableAllUsersRead",
+    precedence 0,
+    authenticationLevel none,
+    itemOrUserFirst userFirst:
     {
-      {
-        protectedItems { entry, allUserAttributeTypesAndValues },
-        grantsAndDenials
+        userClasses { allUsers },
+        userPermissions
         {
-          grantBrowse,
-          grantFilterMatch,
-          grantRead,
-          grantCompare,
-          grantReturnDN
+            {
+                protectedItems { entry, allUserAttributeTypesAndValues },
+                grantsAndDenials
+                {
+                    grantBrowse,
+                    grantFilterMatch,
+                    grantRead,
+                    grantCompare,
+                    grantReturnDN
+                }
+            }
         }
-      }
     }
-  }
 }
-
 subtreeSpecification: {}
 ----
 
@@ -208,37 +207,82 @@ objectClass: subentry
 objectClass: top
 cn: allowSelfAccessAndModification
 prescriptiveACI: {
-  identificationTag "allowSelfAccessAndModification",
-  precedence 10,
-  authenticationLevel simple,
-  itemOrUserFirst userFirst:
-  {
-    userClasses { thisEntry },
-    userPermissions
+    identificationTag "allowSelfAccessAndModification",
+    precedence 10,
+    authenticationLevel simple,
+    itemOrUserFirst userFirst:
     {
-      {
-        protectedItems { entry, allUserAttributeTypesAndValues },
-        grantsAndDenials
+        userClasses { thisEntry },
+        userPermissions
         {
-          grantBrowse,
-          grantDiscloseOnError,
-          grantExport,
-          grantRename,
-          grantImport,
-          grantFilterMatch,
-          grantInvoke,
-          grantAdd,
-          grantRead,
-          grantReturnDN,
-          grantRemove,
-          grantCompare,
-          grantModify
+            {
+                protectedItems { entry, allUserAttributeTypesAndValues },
+                grantsAndDenials
+                {
+                    grantBrowse,
+                    grantDiscloseOnError,
+                    grantExport,
+                    grantRename,
+                    grantImport,
+                    grantFilterMatch,
+                    grantInvoke,
+                    grantAdd,
+                    grantRead,
+                    grantReturnDN,
+                    grantRemove,
+                    grantCompare,
+                    grantModify
+                }
+            }
         }
-      }
     }
-  }
 }
 subtreeSpecification: {}
+----
+
+.设置管理员
+----
+dn: cn=enableAdminSuper,dc=3s,dc=cn
+objectClass: subentry
+objectClass: accessControlSubentry
+objectClass: top
+cn: enableAdminSuper
+prescriptiveACI: {
+    identificationTag "enableAdminSuper",
+    precedence 0,
+    authenticationLevel strong,
+    itemOrUserFirst userFirst:
+    {
+        userClasses
+        {
+            userGroup { "cn=Administrators,ou=groups,dc=3s,dc=cn" }
+        }
+        ,
+        userPermissions
+        {
+            {
+                protectedItems { entry, allUserAttributeTypesAndValues },
+                grantsAndDenials
+                {
+                    grantRemove,
+                    grantExport,
+                    grantCompare,
+                    grantImport,
+                    grantRead,
+                    grantFilterMatch,
+                    grantModify,
+                    grantInvoke,
+                    grantDiscloseOnError,
+                    grantRename,
+                    grantReturnDN,
+                    grantBrowse,
+                    grantAdd
+                }
+            }
+        }
+    }
+}
+subtreeSpecification: { }
 ----
 
 
@@ -311,6 +355,52 @@ image::images/9.png[caption="图片9 "]
 Kerberos认证的基础知识可以参考： link:../kerberos/[Kerberos认证]
 
 这里只是说一下ApacheDS附带的Kerberos服务器配置的一些说明。
+
+=== LDAP配置
+
+为正常启用Kerberos，还需要增加服务的定义
+
+.添加服务的定义
+----
+dn: ou=services,dc=3s,dc=cn
+objectClass: organizationalUnit
+objectClass: top
+ou: services
+
+dn: uid=krbtgt,ou=services,dc=3s,dc=cn
+objectClass: krb5KDCEntry
+objectClass: krb5Principal
+objectClass: organizationalUnit
+objectClass: top
+objectClass: uidObject
+krb5KeyVersionNumber: 1
+krb5PrincipalName: krbtgt/3S.CN@3S.CN
+ou: LDAP
+uid: krbtgt
+krb5Key:: MBGgAwIBA6EKBAiU5iyPT8d2pA==
+krb5Key:: MBmgAwIBEaESBBDpxlUPllfq84bHvAePm6gC
+krb5Key:: MBmgAwIBF6ESBBDX/LgfcFeQNaAuRDfl7OZO
+krb5Key:: MCGgAwIBEKEaBBhr6mhikfI7ztA3VBy5nptAg3qARaEyg98=
+userPassword:: bFpQazU4amNCNmhWUjJWUzlwd1E9e1NTSEF9dE1CcWVac0cralViR21sf35TjY5P
+
+dn: uid=ldap,ou=services,dc=3s,dc=cn
+objectClass: krb5KDCEntry
+objectClass: krb5Principal
+objectClass: organizationalUnit
+objectClass: top
+objectClass: uidObject
+krb5KeyVersionNumber: 1
+krb5PrincipalName: ldap/3s.cn@3S.CN
+ou: TGT
+uid: ldap
+krb5Key:: MBGgAwIBA6EKBAjQ0xNrXvGUMQ==
+krb5Key:: MBmgAwIBEaESBBC2cIRPf1hHoNqR96FnP9Ue
+krb5Key:: MBmgAwIBF6ESBBACZ9h7/tyhWTHOMfwRZmar
+krb5Key:: MCGgAwIBEKEaBBjLsOYNrQT4FVslEKuULLYCL/4j/mEv4DE=
+krb5Key:: MCmgAwIBEqEiBCBeU4zSkuBO/WYJV7Sce9zB/HymIqRnU4z2ps6GodfY1w==
+userPassword:: e1NTs02kSEF9SjZTcUZjVGI5dzVCMmcvUQ==itLQW4yaFhzMU9jdUUxclRZZ3Jqa
+
+----
 
 在用户的实体(Entity)中添加下列属性就可以使用Kerberos了，当然值只是参考
 
