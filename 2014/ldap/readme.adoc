@@ -1,6 +1,11 @@
 = LDAP配置
-lifei <lifei@7v1.net>
-v1.0
+
+:toc:
+:toc-placement!:
+:icons:
+:source-highlighter: highlight
+
+toc::[]
 
 == LDAP介绍
 
