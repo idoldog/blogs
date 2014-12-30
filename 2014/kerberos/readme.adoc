@@ -128,7 +128,7 @@ Host 192.168.20.*
     GSSAPIAuthentication yes
     User some_username
 
-Host *.byted.org
+Host *.3s.cn
     GSSAPIAuthentication yes
     User some_username
 
@@ -184,7 +184,7 @@ Host 192.168.1.1
 .初始化
 [source, bash]
 ----
-$ kinit username[@BYTEDANCE.COM]
+$ kinit username[@3S.CN]
 ----
 
 .查看当前验证信息
@@ -202,7 +202,7 @@ $ kdestory
 .修改密码
 [source, bash]
 ----
-$ kpasswd [username[@BYTEDANCE.COM]]
+$ kpasswd [username[@3S.CN]]
 ----
 
 === 授权
