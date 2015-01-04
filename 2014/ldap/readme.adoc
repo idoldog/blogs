@@ -285,6 +285,80 @@ prescriptiveACI: {
 subtreeSpecification: { }
 ----
 
+==== 密码设置
+
+打开配置文件 `/var/lib/apacheds-2.0.0-M19/default/conf/config.ldif`，找到
+`dn: ads-pwdId=default,ou=passwordPolicies,ads-interceptorId=authenticationInterc
+eptor,ou=interceptors,ads-directoryServiceId=default,ou=config`节。
+
+[source, ldif]
+----
+dn: ads-pwdId=default,ou=passwordPolicies,ads-interceptorId=authenticationInterc
+eptor,ou=interceptors,ads-directoryServiceId=default,ou=config
+ads-pwdminlength: 5
+ads-pwdid: default
+ads-pwdinhistory: 5
+ads-pwdcheckquality: 0
+ads-pwdlockout: FALSE
+ads-pwdlockoutduration: 0
+ads-pwdCheckQuality: 0
+ads-pwdmaxfailure: 5
+ads-pwdvalidator: org.apache.directory.server.core.api.authn.ppolicy.DefaultPass
+wordValidator
+ads-pwdattribute: userPassword
+ads-pwdfailurecountinterval: 30
+entryParentId: 735f06b3-4860-4d3d-a1c9-542f13216cd6
+ads-enabled: TRUE
+objectclass: ads-passwordPolicy
+objectclass: top
+objectclass: ads-base
+entryUUID: 6e109708-1d04-4a90-81c5-afd8e40d0f66
+ads-pwdgraceauthnlimit: 5
+entryCSN: 20150104142334.111000Z#000000#000#000000
+ads-pwdexpirewarning: 600
+----
+
+这里解释两个值：
+
+. ads-pwdlockout：是否启用Lockout
++
+lockout有几种使用场景，譬如员工离职永久lock，密码连续输入错误临时lock等。
+. ads-pwdmaxfailure：最大错误次数，超过会被lock
+. ads-pwdCheckQuality：用来控制密码的质量，有0、1、2三个值，譬如历史中的密码不能用，密码中不能含有用户名等。
+
+如果一个账号被lock了的话，如何解锁呢？
+
+下面是网上给出的方案，其实挺麻烦的，大家还是不要被封。
+
+====
+
+1. stop the server if it is already running
+
+2. open the config.ldif file present under conf directory of the server
+installation
+
+3. go to the LDIF entry with the DN
+ads-pwdId=default,ou=passwordPolicies,ads-interceptorId=authenticationInterceptor,ou=interceptors,ads-directoryServiceId=default,ou=config
+
+4. change the value of ads-pwdLockout to FALSE
+
+5. start the server
+
+6. connect to server using new password (the account will be unlocked)
+
+Now, if you want to re-enable the account lock feature
+
+1. stop the server
+
+2. go to the LDIF entry with the DN
+ads-pwdId=default,ou=passwordPolicies,ads-interceptorId=authenticationInterceptor,ou=interceptors,ads-directoryServiceId=default,ou=config
+
+3. change the value of ads-pwdLockout to TRUE
+
+4. start the server
+
+====
+
 
 == 第三方软件接入
 
